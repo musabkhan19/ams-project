@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AMS — Airline Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">✈</div>
+      <div>
+        <div class="brand-name">AMS</div>
+        <div class="brand-sub">Airline Management</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard">
+        <span class="nav-icon">▣</span> Dashboard
+      </button>
+      <button class="nav-btn" onclick="showPage('flights')" id="nav-flights">
+        <span class="nav-icon">◈</span> Flights
+      </button>
+      <button class="nav-btn" onclick="showPage('bookings')" id="nav-bookings">
+        <span class="nav-icon">◉</span> Bookings
+      </button>
+      <button class="nav-btn" onclick="showPage('passengers')" id="nav-passengers">
+        <span class="nav-icon">◎</span> Passengers
+      </button>
+      <button class="nav-btn" onclick="showPage('aircraft')" id="nav-aircraft">
+        <span class="nav-icon">◇</span> Aircraft
+      </button>
+      <button class="nav-btn" onclick="showPage('crew')" id="nav-crew">
+        <span class="nav-icon">◈</span> Crew
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="db-status">
+        <span class="dot" id="dbDot"></span>
+        <span id="dbStatusText">Connecting…</span>
+      </div>
+      <div class="db-sub">PostgreSQL · AMS schema</div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Overview of all operations</div>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <input type="text" id="globalSearch" placeholder="Search flights, passengers…" oninput="handleSearch(this.value)" />
+        </div>
+        <div class="time-badge" id="liveClock"></div>
+      </div>
+    </header>
+
+    <!-- ── DASHBOARD PAGE ── -->
+    <section id="page-dashboard" class="page active">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue">◈</div>
+          <div class="stat-body">
+            <div class="stat-num" id="s-flights">—</div>
+            <div class="stat-label">Total Flights</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">◉</div>
+          <div class="stat-body">
+            <div class="stat-num" id="s-bookings">—</div>
+            <div class="stat-label">Total Bookings</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon amber">▲</div>
+          <div class="stat-body">
+            <div class="stat-num" id="s-revenue">—</div>
+            <div class="stat-label">Paid Revenue (₨)</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">◎</div>
+          <div class="stat-body">
+            <div class="stat-num" id="s-passengers">—</div>
+            <div class="stat-label">Passengers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head">Recent Flights</div>
+          <table class="data-table" id="dashFlightTable">
+            <thead>
+              <tr><th>Flight</th><th>Route</th><th>Airline</th><th>Status</th></tr>
+            </thead>
+            <tbody id="dashFlightBody"></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-head">Recent Bookings</div>
+          <table class="data-table" id="dashBookingTable">
+            <thead>
+              <tr><th>Passenger</th><th>Flight</th><th>Class</th><th>Price</th></tr>
+            </thead>
+            <tbody id="dashBookingBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-head">Airlines</div>
+          <div id="airlineList" class="pill-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-head">Flight Status Breakdown</div>
+          <div id="statusBreakdown" class="status-bars"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FLIGHTS PAGE ── -->
+    <section id="page-flights" class="page">
+      <div class="toolbar">
+        <input type="text" class="search-input" id="flightSearch" placeholder="Search flight number, airline…" oninput="renderFlights()" />
+        <select id="flightStatusFilter" onchange="renderFlights()">
+          <option value="">All Statuses</option>
+          <option>On-Time</option>
+          <option>Delayed</option>
+          <option>Cancelled</option>
+          <option>Landed</option>
+          <option>Departed</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="data-table full">
+          <thead>
+            <tr>
+              <th>Flight No.</th><th>Airline</th><th>From</th><th>To</th>
+              <th>Departure</th><th>Arrival</th><th>Aircraft</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="flightTableBody"></tbody>
+        </table>
+        <div class="table-footer" id="flightCount"></div>
+      </div>
+    </section>
+
+    <!-- ── BOOKINGS PAGE ── -->
+    <section id="page-bookings" class="page">
+      <div class="toolbar">
+        <input type="text" class="search-input" id="bookingSearch" placeholder="Search passenger, flight…" oninput="renderBookings()" />
+        <select id="bookingPayFilter" onchange="renderBookings()">
+          <option value="">All Payments</option>
+          <option>Paid</option>
+          <option>Pending</option>
+          <option>Refunded</option>
+        </select>
+        <select id="bookingClassFilter" onchange="renderBookings()">
+          <option value="">All Classes</option>
+          <option>Economy</option>
+          <option>Business</option>
+          <option>First</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="data-table full">
+          <thead>
+            <tr>
+              <th>#</th><th>Passenger</th><th>Flight</th><th>Seat</th>
+              <th>Class</th><th>Price (₨)</th><th>Booking Date</th><th>Payment</th>
+            </tr>
+          </thead>
+          <tbody id="bookingTableBody"></tbody>
+        </table>
+        <div class="table-footer" id="bookingCount"></div>
+      </div>
+    </section>
+
+    <!-- ── PASSENGERS PAGE ── -->
+    <section id="page-passengers" class="page">
+      <div class="toolbar">
+        <input type="text" class="search-input" id="passengerSearch" placeholder="Search name, email, nationality…" oninput="renderPassengers()" />
+        <select id="passengerGenderFilter" onchange="renderPassengers()">
+          <option value="">All Genders</option>
+          <option>Male</option>
+          <option>Female</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="data-table full">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Gender</th><th>Age</th>
+              <th>Nationality</th><th>Email</th><th>Bookings</th>
+            </tr>
+          </thead>
+          <tbody id="passengerTableBody"></tbody>
+        </table>
+        <div class="table-footer" id="passengerCount"></div>
+      </div>
+    </section>
+
+    <!-- ── AIRCRAFT PAGE ── -->
+    <section id="page-aircraft" class="page">
+      <div class="toolbar">
+        <input type="text" class="search-input" id="aircraftSearch" placeholder="Search model, tail number…" oninput="renderAircraft()" />
+      </div>
+      <div class="card">
+        <table class="data-table full">
+          <thead>
+            <tr>
+              <th>Tail No.</th><th>Model</th><th>Seats</th>
+              <th>Year</th><th>Airline</th>
+            </tr>
+          </thead>
+          <tbody id="aircraftTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── CREW PAGE ── -->
+    <section id="page-crew" class="page">
+      <div class="toolbar">
+        <input type="text" class="search-input" id="crewSearch" placeholder="Search name, role, licence…" oninput="renderCrew()" />
+        <select id="crewRoleFilter" onchange="renderCrew()">
+          <option value="">All Roles</option>
+          <option>Pilot</option>
+          <option>Co-Pilot</option>
+          <option>Flight Attendant</option>
+          <option>Engineer</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="data-table full">
+          <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Role</th>
+              <th>Licence No.</th><th>Airline</th>
+            </tr>
+          </thead>
+          <tbody id="crewTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TOAST NOTIFICATION -->
+    <div class="toast" id="toast"></div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
