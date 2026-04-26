@@ -9,11 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 const pool = new Pool({
-  host:     'localhost',
-  port:     5432,
-  database: 'AMS',
-  user:     'postgres',
-  password: 'musabkhan',    // ← replace with your password
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:1234@localhost:5432/AMS',
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
 // sets schema to ams for every query
